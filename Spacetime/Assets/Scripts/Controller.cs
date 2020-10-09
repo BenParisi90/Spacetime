@@ -11,7 +11,7 @@ public class Controller : MonoBehaviour
     float startTime;
     [HideInInspector]
     public bool simulationStarted = false;
-    public float properTime {get{return Time.time - startTime;}}
+    //public float properTime {get{return Time.time - startTime;}}
     Animator animator;
 
     public void BeginSimulation()
@@ -28,16 +28,10 @@ public class Controller : MonoBehaviour
         cameraPosition.x = currentObserver.transform.position.x;
         cameraTransform.position = cameraPosition;
         cameraTransform.parent = currentObserver.transform;
-        if(currentObserver.velocity != 0)
+        float velocityOffset = currentObserver.velocity;
+        foreach(Observer observer in observers)
         {
-            foreach(Observer observer in observers)
-            {
-                if(observer != currentObserver)
-                {
-                    observer.velocity -= currentObserver.velocity;
-                }
-            }
-            currentObserver.velocity = 0;
+            observer.velocity -= velocityOffset;
         }
     }
 
@@ -51,7 +45,7 @@ public class Controller : MonoBehaviour
         {
             if(observer == currentObserver)
             {
-                observer.timer.text = properTime.ToString("F1");   
+                observer.observedTime += Time.deltaTime;
             }
             else
             {
@@ -59,8 +53,12 @@ public class Controller : MonoBehaviour
                 Vector3 newObserverPosition = observer.transform.position;
                 newObserverPosition.x += distanceTraveled;
                 observer.transform.position = newObserverPosition;
-                observer.timer.text = MovingTime(observer).ToString("F1");
+                //observer.timer.text = MovingTime(observer).ToString("F1");
+                float movingTimeDelta = MovingTime(observer) - observer.previousMovingTime;
+                observer.observedTime += movingTimeDelta;
+                observer.previousMovingTime = MovingTime(observer);
             }
+            observer.timer.text = observer.observedTime.ToString("F1");   
         }
     }
 
@@ -73,6 +71,12 @@ public class Controller : MonoBehaviour
     {
         float gamma = LorentzFactor(observer.velocity);
         float distance = observer.transform.position.x - currentObserver.transform.position.x;
-        return gamma * (properTime - ( (observer.velocity * distance) / ( Mathf.Pow(c, 2) ) ) );
+        float movingTime = gamma * (currentObserver.observedTime - ( (observer.velocity * distance) / ( Mathf.Pow(c, 2) ) ) );
+        if(observer.name == "Rocket")
+        {
+            Debug.Log(gamma + " : " + distance + " : " + observer.velocity + " : " + movingTime);
+        }
+        return movingTime;
+        
     }
 }
