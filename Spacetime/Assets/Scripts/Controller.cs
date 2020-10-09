@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Controller : MonoBehaviour
 {
-    public static Controller instance;
     float c = 1;
     public List<Observer> observers;
     public Observer currentObserver;
@@ -24,7 +23,6 @@ public class Controller : MonoBehaviour
 
     void Start()
     {
-        instance = this;
         animator = GetComponent<Animator>();
         Vector3 cameraPosition = cameraTransform.position;
         cameraPosition.x = currentObserver.transform.position.x;
@@ -43,9 +41,32 @@ public class Controller : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if(!simulationStarted)
+        {
+            return;
+        }
+        foreach(Observer observer in observers)
+        {
+            if(observer == currentObserver)
+            {
+                observer.timer.text = properTime.ToString("F1");   
+            }
+            else
+            {
+                float distanceTraveled = observer.velocity * Time.deltaTime;
+                Vector3 newObserverPosition = observer.transform.position;
+                newObserverPosition.x += distanceTraveled;
+                observer.transform.position = newObserverPosition;
+                observer.timer.text = MovingTime(observer).ToString("F1");
+            }
+        }
+    }
+
     public float LorentzFactor(float velocity)
     {
-        return 1 / (Mathf.Sqrt(1 - ( Mathf.Pow(velocity, 2) / Mathf.Pow(c, 2) ) ) );
+        return 1 / Mathf.Sqrt(1 - Mathf.Pow(velocity / c, 2) );
     }
 
     public float MovingTime(Observer observer)
