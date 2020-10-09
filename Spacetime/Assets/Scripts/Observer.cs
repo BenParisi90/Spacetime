@@ -9,5 +9,18 @@ public class Observer : MonoBehaviour
     [Range(-.99f, .99f)]
     public float velocity;
     public float previousMovingTime = 0;
-    public float observedTime;
+    float _observedTime;
+    public float observedTime
+    {
+        get
+        {
+            return _observedTime;
+        }
+        set
+        {
+            _observedTime = value;
+            timer.text = _observedTime.ToString("F1");   
+        }
+    }
+    public float position {get{return transform.position.x;}}
 }

@@ -11,6 +11,7 @@ public class Controller : MonoBehaviour
     float startTime;
     [HideInInspector]
     public bool simulationStarted = false;
+    //switched from using "proper time" to adding the time delta each from because of my accellereated motion plan
     //public float properTime {get{return Time.time - startTime;}}
     Animator animator;
 
@@ -25,13 +26,15 @@ public class Controller : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         Vector3 cameraPosition = cameraTransform.position;
-        cameraPosition.x = currentObserver.transform.position.x;
+        cameraPosition.x = currentObserver.position;
         cameraTransform.position = cameraPosition;
         cameraTransform.parent = currentObserver.transform;
         float velocityOffset = currentObserver.velocity;
         foreach(Observer observer in observers)
         {
             observer.velocity -= velocityOffset;
+            //should I be offsetting time at the start like this?
+            observer.observedTime -= Mathf.Abs(observer.position - currentObserver.position);
         }
     }
 
@@ -53,12 +56,11 @@ public class Controller : MonoBehaviour
                 Vector3 newObserverPosition = observer.transform.position;
                 newObserverPosition.x += distanceTraveled;
                 observer.transform.position = newObserverPosition;
-                //observer.timer.text = MovingTime(observer).ToString("F1");
-                float movingTimeDelta = MovingTime(observer) - observer.previousMovingTime;
+                float currentMovingTime = MovingTime(observer);
+                float movingTimeDelta = currentMovingTime - observer.previousMovingTime;
                 observer.observedTime += movingTimeDelta;
-                observer.previousMovingTime = MovingTime(observer);
+                observer.previousMovingTime = currentMovingTime;
             }
-            observer.timer.text = observer.observedTime.ToString("F1");   
         }
     }
 
@@ -70,9 +72,9 @@ public class Controller : MonoBehaviour
     public float MovingTime(Observer observer)
     {
         float gamma = LorentzFactor(observer.velocity);
-        float distance = observer.transform.position.x - currentObserver.transform.position.x;
+        float distance = observer.position - currentObserver.position;
         float movingTime = gamma * (currentObserver.observedTime - ( (observer.velocity * distance) / ( Mathf.Pow(c, 2) ) ) );
-        if(observer.name == "Rocket")
+        if(observer.name == "Sun")
         {
             Debug.Log(gamma + " : " + distance + " : " + observer.velocity + " : " + movingTime);
         }
