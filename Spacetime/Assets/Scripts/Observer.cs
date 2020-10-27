@@ -6,9 +6,7 @@ using TMPro;
 public class Observer : MonoBehaviour
 {
     public TextMeshPro timer;
-    [Range(-.99f, .99f)]
     public float velocity;
-    public float previousMovingTime = 0;
     float _observedTime;
     public float observedTime
     {
@@ -23,4 +21,26 @@ public class Observer : MonoBehaviour
         }
     }
     public float position {get{return transform.position.x;}}
+
+    SpriteRenderer sr;
+
+    void Start()
+    {
+        sr = transform.GetChild(0).GetComponent<SpriteRenderer>();
+    }
+
+    void OnMouseEnter()
+    {
+        sr.color = new Color(.5f, 1, .5f);
+    }
+
+    void OnMouseExit()
+    {
+        sr.color = new Color(1, 1, 1);
+    }
+
+    void OnMouseDown()
+    {
+        Controller.instance.SetReferenceFrame(this);
+    }
 }

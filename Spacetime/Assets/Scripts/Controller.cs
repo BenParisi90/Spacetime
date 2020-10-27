@@ -1,41 +1,34 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Controller : MonoBehaviour
 {
+    public static Controller instance;
     float c = 1;
     public List<Observer> observers;
-    public Observer currentObserver;
+    public Observer me;
+    public Text currentObserverText;
     public Transform cameraTransform;
-    float startTime;
     [HideInInspector]
     public bool simulationStarted = false;
-    //switched from using "proper time" to adding the time delta each from because of my accellereated motion plan
-    //public float properTime {get{return Time.time - startTime;}}
-    Animator animator;
+    public float properTime = 0;
 
     public void BeginSimulation()
     {
-        startTime = Time.time;
         simulationStarted = true;
-        //animator.Play("TwinParadox");
+    }
+
+    public void PauseSimulation()
+    {
+        simulationStarted = false;
     }
 
     void Start()
     {
-        animator = GetComponent<Animator>();
-        Vector3 cameraPosition = cameraTransform.position;
-        cameraPosition.x = currentObserver.position;
-        cameraTransform.position = cameraPosition;
-        cameraTransform.parent = currentObserver.transform;
-        float velocityOffset = currentObserver.velocity;
-        foreach(Observer observer in observers)
-        {
-            observer.velocity -= velocityOffset;
-            //should I be offsetting time at the start like this?
-            observer.observedTime -= Mathf.Abs(observer.position - currentObserver.position);
-        }
+        instance = this;
+        SetReferenceFrame(me);
     }
 
     void Update()
@@ -44,41 +37,90 @@ public class Controller : MonoBehaviour
         {
             return;
         }
+        properTime += Time.deltaTime;
         foreach(Observer observer in observers)
         {
-            if(observer == currentObserver)
+            if(observer == me)
             {
-                observer.observedTime += Time.deltaTime;
+                observer.observedTime = properTime;
             }
             else
             {
-                float distanceTraveled = observer.velocity * Time.deltaTime;
-                Vector3 newObserverPosition = observer.transform.position;
-                newObserverPosition.x += distanceTraveled;
-                observer.transform.position = newObserverPosition;
-                float currentMovingTime = MovingTime(observer);
-                float movingTimeDelta = currentMovingTime - observer.previousMovingTime;
-                observer.observedTime += movingTimeDelta;
-                observer.previousMovingTime = currentMovingTime;
+                observer.observedTime = LorentzTransformTime(observer.velocity, Position(observer), properTime);
+
+                Vector3 newPosition = observer.transform.position;
+                newPosition.x += observer.velocity * Time.deltaTime;
+                observer.transform.position = newPosition;
             }
         }
     }
 
-    public float LorentzFactor(float velocity)
+    public void SetReferenceFrame(Observer target)
     {
-        return 1 / Mathf.Sqrt(1 - Mathf.Pow(velocity / c, 2) );
+        currentObserverText.text = "Current Observer: " + target.name;
+        Vector3 cameraPosition = cameraTransform.position;
+        cameraPosition.x = target.position;
+        cameraTransform.position = cameraPosition;
+        cameraTransform.parent = target.transform;
+
+        float targetVelocity = target.velocity;
+        float newProperTime = LorentzTransformTime(target.velocity, Position(target), properTime);
+        me = target;
+
+        foreach(Observer observer in observers)
+        {
+            observer.velocity -= targetVelocity;
+            if(observer == target)
+            {
+                observer.observedTime = newProperTime;
+            }
+            else
+            {
+                observer.observedTime = LorentzTransformTime(observer.velocity, Position(observer), properTime);
+            }
+        }
     }
 
-    public float MovingTime(Observer observer)
+    public void ChangeVelocity(Observer target, float delta)
     {
-        float gamma = LorentzFactor(observer.velocity);
-        float distance = observer.position - currentObserver.position;
-        float movingTime = gamma * (currentObserver.observedTime - ( (observer.velocity * distance) / ( Mathf.Pow(c, 2) ) ) );
-        if(observer.name == "Sun")
+        if(target != me)
         {
-            Debug.Log(gamma + " : " + distance + " : " + observer.velocity + " : " + movingTime);
+            target.velocity += delta;
         }
-        return movingTime;
-        
+        else
+        {
+            foreach(Observer observer in observers)
+            {
+                if(observer != me)
+                {
+                    observer.velocity -= delta;
+                }
+            }
+        }
+    }
+
+    float Position(Observer target)
+    {
+        return target.transform.position.x - me.transform.position.x;
+    }
+
+    float Beta(float velocity)
+    {
+        return velocity/c;
+    }
+
+    float LorentzFactor(float velocity)
+    {
+        return 1 / Mathf.Sqrt(1 - Mathf.Pow(Beta(velocity), 2) );
+    }
+
+    float LorentzTransformTime(float velocity, float position, float time)
+    {
+        return LorentzFactor(velocity) * (time -(Beta(velocity) * position));
+    }
+
+    float LorentzTransformPosition(float velocity, float position, float time)
+    {
+        return LorentzFactor(velocity) * (position - (Beta(velocity) * time));
     }
 }
