@@ -41,6 +41,6 @@ public class Observer : MonoBehaviour
 
     void OnMouseDown()
     {
-        Controller.instance.SetReferenceFrame(this);
+        Controller.instance.SetRestFrame(this);
     }
 }

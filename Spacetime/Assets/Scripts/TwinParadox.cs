@@ -10,6 +10,12 @@ public class TwinParadox : MonoBehaviour
 
     bool simulationStarted = false;
 
+    void Start()
+    {
+        //Controller.instance.ChangeVelocity(rocket, .9f);
+        //Controller.instance.ChangeVelocity(destination, .9f);
+    }
+
     public void BeginSimulation()
     {
         if(simulationStarted)
@@ -22,7 +28,6 @@ public class TwinParadox : MonoBehaviour
 
     IEnumerator TwinParadoxCoroutine()
     {
-        Controller.instance.ChangeVelocity(rocket, .9f);
         while(rocket.transform.position.x < destination.transform.position.x)
         {
             yield return null;
