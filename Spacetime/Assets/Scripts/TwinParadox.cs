@@ -32,7 +32,7 @@ public class TwinParadox : MonoBehaviour
         {
             yield return null;
         }
-        Debug.Log("Reach destination!");
+        Debug.Log("-----Reach destination!-----");
         Debug.Log("home: " + home.observedTime);
         Debug.Log("rocket: " + rocket.observedTime);
         Debug.Log("destination: " + destination.observedTime);
