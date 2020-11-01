@@ -8,7 +8,9 @@ public class Controller : MonoBehaviour
     public static Controller instance;
     float c = 1;
     public List<Observer> observers;
-    public Observer me;
+    [SerializeField]
+    Observer startingFrame;
+    Observer me;
     public Text currentObserverText;
     public Transform cameraTransform;
     [HideInInspector]
@@ -18,7 +20,7 @@ public class Controller : MonoBehaviour
     void Start()
     {
         instance = this;
-        SetRestFrame(me);
+        SetRestFrame(startingFrame);
     }
 
     void Update()
@@ -51,6 +53,11 @@ public class Controller : MonoBehaviour
 
     public void SetRestFrame(Observer newFrame)
     {
+        if(newFrame == me)
+        {
+            return;
+        }
+
         Debug.Log("---- SET REST FRAME : " + newFrame + "----");
         currentObserverText.text = "Current Observer: " + newFrame.name;
 
@@ -59,7 +66,11 @@ public class Controller : MonoBehaviour
         cameraTransform.position = cameraPosition;
         cameraTransform.parent = newFrame.transform;
 
-        //float targetVelocity = newFrame.velocity;
+        if(me == null)
+        {
+            me = newFrame;
+            return;
+        }
 
         int i = 0;
         List<float> newTimes = new List<float>();
@@ -68,8 +79,8 @@ public class Controller : MonoBehaviour
 
         for(i = 0; i < observers.Count; i ++)
         {
-            newTimes.Add(LorentzTransformTime(newFrame.velocity, GetPosition(me, observers[i]), properTime));
-            newPositions.Add(LorentzTransformPosition(newFrame.velocity, GetPosition(me, observers[i]), properTime));
+            newTimes.Add(LorentzTransformTime(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
+            newPositions.Add(LorentzTransformPosition(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
             newVelocities.Add(VelocityAddition(-newFrame.velocity, observers[i].velocity));
         }
 
