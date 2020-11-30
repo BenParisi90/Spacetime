@@ -32,7 +32,7 @@ public class TwinParadox : MonoBehaviour
             Debug.Log("home: " + home.observedTime);
             Debug.Log("rocket: " + rocket.observedTime);
             Debug.Log("destination: " + destination.observedTime);
-            arrivalText.text = "Arrival:\nrocket:" + rocket.observedTime.ToString("F2") + "\ndestination:" + destination.observedTime.ToString("F2");
+            arrivalText.text = "Arrival:\nrocket:" + rocket.observedTime.ToString(Controller.ROUNDING_RULE) + "\ndestination:" + destination.observedTime.ToString(Controller.ROUNDING_RULE);
             destinationReached = true;
         }
     }
@@ -56,7 +56,7 @@ public class TwinParadox : MonoBehaviour
 
     IEnumerator TwinParadoxCoroutine()
     {
-        while(rocket.transform.position.x < destination.transform.position.x)
+        while(rocket.transform.position.x <= destination.transform.position.x)
         {
             yield return null;
         }

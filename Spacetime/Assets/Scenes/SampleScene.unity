@@ -499,7 +499,7 @@ GameObject:
   - component: {fileID: 404284226}
   - component: {fileID: 404284225}
   m_Layer: 0
-  m_Name: CurrentObserver
+  m_Name: RestFrame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -525,7 +525,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Current Observer:'
+  m_text: 'Rest Frame:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6a7c318e197e1a44d935a930a58ec0c8, type: 2}
   m_sharedMaterial: {fileID: 1470079165225863485, guid: 6a7c318e197e1a44d935a930a58ec0c8, type: 2}
@@ -1572,7 +1572,7 @@ MonoBehaviour:
   - {fileID: 672325361}
   - {fileID: 986657009}
   startingFrame: {fileID: 1167793806}
-  currentObserverText: {fileID: 404284225}
+  restFrameText: {fileID: 404284225}
   cameraTransform: {fileID: 519420032}
   simulationStarted: 0
   properTime: 0

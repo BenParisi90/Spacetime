@@ -22,13 +22,13 @@ public class Observer : MonoBehaviour
     public void SetVelocity(float newVelocity)
     {
         velocity = newVelocity;
-        velocityText.text = "V=" + velocity.ToString("F2");
+        velocityText.text = "V=" + velocity.ToString(Controller.ROUNDING_RULE);
     }
 
     public void SetObservedTime(float newObservedTime)
     {
         observedTime = newObservedTime;
-        timeText.text = "T=" + observedTime.ToString("F2");   
+        timeText.text = "T=" + observedTime.ToString(Controller.ROUNDING_RULE);   
     }
 
     public void SetPosition(float newPosition)
@@ -36,7 +36,7 @@ public class Observer : MonoBehaviour
         Vector3 currentPosition = transform.position;
         currentPosition.x = newPosition;
         transform.position = currentPosition;
-        positionText.text = "X=" + transform.position.x.ToString("F2");
+        positionText.text = "X=" + transform.position.x.ToString(Controller.ROUNDING_RULE);
     }
 
     void Start()
