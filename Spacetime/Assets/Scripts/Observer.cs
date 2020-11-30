@@ -5,28 +5,56 @@ using TMPro;
 
 public class Observer : MonoBehaviour
 {
-    public TextMeshPro timer;
+    public TextMeshPro timeText;
+    public TextMeshPro velocityText;
+    public TextMeshPro positionText;
+
     public float velocity;
-    float _observedTime;
-    public float observedTime
-    {
-        get
-        {
-            return _observedTime;
-        }
-        set
-        {
-            _observedTime = value;
-            timer.text = _observedTime.ToString("F1");   
-        }
-    }
+    public float observedTime;
     public float position {get{return transform.position.x;}}
 
+    public float startVelocity;
+    public float startObservedTime;
+    public float startPosition;
+
     SpriteRenderer sr;
+
+    public void SetVelocity(float newVelocity)
+    {
+        velocity = newVelocity;
+        velocityText.text = "V=" + velocity.ToString("F2");
+    }
+
+    public void SetObservedTime(float newObservedTime)
+    {
+        observedTime = newObservedTime;
+        timeText.text = "T=" + observedTime.ToString("F2");   
+    }
+
+    public void SetPosition(float newPosition)
+    {
+        Vector3 currentPosition = transform.position;
+        currentPosition.x = newPosition;
+        transform.position = currentPosition;
+        positionText.text = "X=" + transform.position.x.ToString("F2");
+    }
 
     void Start()
     {
         sr = transform.GetChild(0).GetComponent<SpriteRenderer>();
+        SetVelocity(velocity);
+        SetObservedTime(observedTime);
+        SetPosition(transform.position.x);
+        startVelocity = velocity;
+        startObservedTime = observedTime;
+        startPosition = position;
+    }
+
+    public void Reset()
+    {
+        SetVelocity(startVelocity);
+        SetObservedTime(startObservedTime);
+        SetPosition(startPosition);
     }
 
     void OnMouseEnter()

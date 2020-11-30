@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Controller : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class Controller : MonoBehaviour
     [SerializeField]
     Observer startingFrame;
     Observer me;
-    public Text currentObserverText;
+    public TextMeshPro currentObserverText;
     public Transform cameraTransform;
     [HideInInspector]
     public bool simulationStarted = false;
@@ -36,8 +37,8 @@ public class Controller : MonoBehaviour
             newPosition.x += observer.velocity * Time.deltaTime;
             observer.transform.position = newPosition;
 
-            //observer.observedTime += Time.deltaTime / LorentzFactor(observer.velocity);
-            observer.observedTime = LorentzTransformTime(observer.velocity, GetPosition(me, observer), properTime);
+            observer.SetObservedTime(observer.observedTime + (Time.deltaTime / LorentzFactor(observer.velocity)));
+            //observer.SetObservedTime(LorentzTransformTime(observer.velocity, GetPosition(me, observer), properTime));
         }
     }
 
@@ -51,6 +52,15 @@ public class Controller : MonoBehaviour
         simulationStarted = false;
     }
 
+    public void ResetSimulation()
+    {
+        SetRestFrame(startingFrame);
+        foreach(Observer observer in observers)
+        {
+            observer.Reset();
+        }
+    }
+
     public void SetRestFrame(Observer newFrame)
     {
         if(newFrame == me)
@@ -59,12 +69,12 @@ public class Controller : MonoBehaviour
         }
 
         Debug.Log("---- SET REST FRAME : " + newFrame + "----");
-        currentObserverText.text = "Current Observer: " + newFrame.name;
+        currentObserverText.text = "Current Observer:\n" + newFrame.name;
 
-        Vector3 cameraPosition = cameraTransform.position;
+        /*Vector3 cameraPosition = cameraTransform.position;
         cameraPosition.x = newFrame.position;
         cameraTransform.position = cameraPosition;
-        cameraTransform.parent = newFrame.transform;
+        cameraTransform.parent = newFrame.transform;*/
 
         if(me == null)
         {
@@ -79,19 +89,28 @@ public class Controller : MonoBehaviour
 
         for(i = 0; i < observers.Count; i ++)
         {
-            newTimes.Add(LorentzTransformTime(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
-            newPositions.Add(LorentzTransformPosition(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
-            newVelocities.Add(VelocityAddition(-newFrame.velocity, observers[i].velocity));
+            float newVelocity = VelocityAddition(-newFrame.velocity, observers[i].velocity);
+            newVelocities.Add(newVelocity);
+
+            newTimes.Add(LorentzTransformTime(-newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
+            //newTimes.Add(LorentzTransformTime(newVelocity, GetPosition(newFrame, observers[i]), observers[i].observedTime));
+
+            newPositions.Add(LorentzTransformPosition(-newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime) - newFrame.position);
+            //newPositions.Add(LorentzTransformPosition(newVelocity, GetPosition(newFrame, observers[i]), observers[i].observedTime));
+
+            //newPositions.Add(LengthContraction(newFrame.velocity, GetPosition(me, observers[i])));
         }
+
+        newFrame.SetPosition(0);
 
         for(i = 0; i < observers.Count; i ++)
         {
             Debug.Log("Set time " + observers[i].name + ": " + newTimes[i]);
-            observers[i].observedTime = newTimes[i];
-            Debug.Log("Set " + observers[i].name + " position relative to " + me.name + ": " + newPositions[i]);
-            SetPosition(me, observers[i], newPositions[i]);
+            observers[i].SetObservedTime(newTimes[i]);
+            Debug.Log("Set " + observers[i].name + " position relative to " + newFrame.name + ": " + newPositions[i]);
+            SetPosition(newFrame, observers[i], newPositions[i]);
             Debug.Log("Set velocity " + observers[i].name + ": " + newVelocities[i]);
-            observers[i].velocity = newVelocities[i];
+            observers[i].SetVelocity(newVelocities[i]);
         }
 
         me = newFrame;
@@ -118,10 +137,12 @@ public class Controller : MonoBehaviour
 
     void SetPosition(Observer observer, Observer observed, float position)
     {
-        Vector3 newPosition = observed.transform.position;
+        /*Vector3 newPosition = observed.transform.position;
         float newX = observer.transform.position.x + position;
         newPosition.x = newX;
-        observed.transform.position = newPosition;
+        observed.transform.position = newPosition;*/
+        float newPosition = observer.transform.position.x + position;
+        observed.SetPosition(newPosition);
     }
 
     float GetPosition(Observer observer, Observer observed)
@@ -143,16 +164,27 @@ public class Controller : MonoBehaviour
 
     float LorentzTransformTime(float velocity, float position, float time)
     {
-        return LorentzFactor(velocity) * (time -(Beta(velocity) * position));
+        //return LorentzFactor(velocity) * (time - (Beta(velocity) * position));
+        //return (time / LorentzFactor(velocity)) + (Beta(velocity) * position);
+        //return ((position/LorentzFactor(velocity)) + (Beta(velocity) * (time/LorentzFactor(velocity))))/(1 - Beta(velocity));
+        return (time - (Beta(velocity) * position)) / LorentzFactor(velocity);
     }
 
     float LorentzTransformPosition(float velocity, float position, float time)
     {
-        return LorentzFactor(velocity) * (position - (Beta(velocity) * time));
+        //return LorentzFactor(velocity) * (position - (Beta(velocity) * time));
+        //return (position / LorentzFactor(velocity)) + (Beta(velocity) * time);
+        //return ((time/LorentzFactor(velocity)) + (Beta(velocity) * (position/LorentzFactor(velocity))))/(1 - Beta(velocity));
+        return (position - (Beta(velocity) * time)) / LorentzFactor(velocity);
     }
 
     float VelocityAddition(float firstFrameVelocity, float observedFrameVelocity)
     {
         return (observedFrameVelocity + firstFrameVelocity)/(1 + ((observedFrameVelocity * firstFrameVelocity)/Mathf.Pow(c, 2)));
     }
+
+    /*float LengthContraction(float velocity, float position)
+    {
+        return position / LorentzFactor(velocity);
+    }*/
 }
