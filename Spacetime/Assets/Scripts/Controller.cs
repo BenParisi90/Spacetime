@@ -93,11 +93,14 @@ public class Controller : MonoBehaviour
             float newVelocity = VelocityAddition(-newFrame.velocity, observers[i].velocity);
             newVelocities.Add(newVelocity);
 
-            newTimes.Add(LorentzTransformTime(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
+            //newTimes.Add(LorentzTransformTime(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
             //newTimes.Add(LorentzTransformTime(newVelocity, GetPosition(newFrame, observers[i]), observers[i].observedTime));
+            float newTime = NewTime(newFrame.velocity, observers[i].position, observers[i].observedTime);
+            newTimes.Add(newTime);
 
-            newPositions.Add(LorentzTransformPosition(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime) - newFrame.position);
+            //newPositions.Add(LorentzTransformPosition(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime) - newFrame.position);
             //newPositions.Add(LorentzTransformPosition(newVelocity, GetPosition(newFrame, observers[i]), observers[i].observedTime));
+            newPositions.Add(NewPosition(newFrame.velocity, observers[i].position, newTime));
 
             //newPositions.Add(LengthContraction(newFrame.velocity, GetPosition(me, observers[i])));
         }
@@ -182,6 +185,17 @@ public class Controller : MonoBehaviour
     float VelocityAddition(float firstFrameVelocity, float observedFrameVelocity)
     {
         return (observedFrameVelocity + firstFrameVelocity)/(1 + ((observedFrameVelocity * firstFrameVelocity)/Mathf.Pow(c, 2)));
+    }
+
+    //what I think the new frames time will be based on how far away and the rockets proper time
+    float NewTime(float velocity, float position, float time)
+    {
+        return (time / LorentzFactor(velocity)) + (Beta(velocity) * position);
+    }
+
+    float NewPosition(float velocity, float position, float time)
+    {
+        return LorentzFactor(velocity) * (position - (Beta(velocity) * time));
     }
 
     /*float LengthContraction(float velocity, float position)
