@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -83,6 +83,8 @@ public class Controller : MonoBehaviour
             return;
         }
 
+        float newFramePosition = 0;
+        float newFrameTime = 0;
         int i = 0;
         List<float> newTimes = new List<float>();
         List<float> newPositions = new List<float>();
@@ -90,35 +92,51 @@ public class Controller : MonoBehaviour
 
         for(i = 0; i < observers.Count; i ++)
         {
-            float newVelocity = VelocityAddition(-newFrame.velocity, observers[i].velocity);
+            float newVelocity = NewVelocity(observers[i].velocity, newFrame.velocity);
+            //float newVelocity = VelocityAddition(-newFrame.velocity, observers[i].velocity);
             newVelocities.Add(newVelocity);
 
             //newTimes.Add(LorentzTransformTime(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime));
             //newTimes.Add(LorentzTransformTime(newVelocity, GetPosition(newFrame, observers[i]), observers[i].observedTime));
             float newTime = NewTime(newFrame.velocity, observers[i].position, observers[i].observedTime);
             newTimes.Add(newTime);
+            if(observers[i] == newFrame)
+            {
+                newFrameTime = newTime;
+            }
 
             //newPositions.Add(LorentzTransformPosition(newFrame.velocity, GetPosition(me, observers[i]), observers[i].observedTime) - newFrame.position);
             //newPositions.Add(LorentzTransformPosition(newVelocity, GetPosition(newFrame, observers[i]), observers[i].observedTime));
-            newPositions.Add(NewPosition(newFrame.velocity, observers[i].position, newTime));
+            float newPosition = NewPosition(newFrame.velocity, observers[i].position, newTime);
+            newPositions.Add(newPosition);
+            if(observers[i] == newFrame)
+            {
+                newFramePosition = newPosition;
+            }
 
             //newPositions.Add(LengthContraction(newFrame.velocity, GetPosition(me, observers[i])));
         }
 
+        float positionOffset = newFramePosition;
+        float timeOffset = newFrameTime - properTime;
         newFrame.SetPosition(0);
+        me = newFrame;
+        properTime = newFrame.observedTime;
+
+        /*Debug.Log("NewTime = " + newTimes);
+        Debug.Log("NewPositions = " + newPositions);*/
 
         for(i = 0; i < observers.Count; i ++)
         {
-            UnityEngine.Debug.Log("Set time " + observers[i].name + ": " + newTimes[i]);
-            observers[i].SetObservedTime(newTimes[i]);
-            UnityEngine.Debug.Log("Set " + observers[i].name + " position relative to " + newFrame.name + ": " + newPositions[i]);
-            SetPosition(newFrame, observers[i], newPositions[i]);
+            UnityEngine.Debug.Log("Set time " + observers[i].name + ": " + (newTimes[i] - timeOffset));
+            observers[i].SetObservedTime(newTimes[i] - timeOffset);
+            UnityEngine.Debug.Log("Set " + observers[i].name + " position relative to " + newFrame.name + ": " + (newPositions[i] - newFramePosition));
+            SetPosition(newFrame, observers[i], (newPositions[i] - newFramePosition));
             UnityEngine.Debug.Log("Set velocity " + observers[i].name + ": " + newVelocities[i]);
             observers[i].SetVelocity(newVelocities[i]);
         }
 
-        me = newFrame;
-        properTime = newFrame.observedTime;
+        
     }
 
     /*public void ChangeVelocity(Observer target, float delta)
@@ -185,6 +203,11 @@ public class Controller : MonoBehaviour
     float VelocityAddition(float firstFrameVelocity, float observedFrameVelocity)
     {
         return (observedFrameVelocity + firstFrameVelocity)/(1 + ((observedFrameVelocity * firstFrameVelocity)/Mathf.Pow(c, 2)));
+    }
+
+    float NewVelocity(float oldVelocity, float newFrameVelocity)
+    {
+        return (oldVelocity - newFrameVelocity)/(1 - ((oldVelocity * newFrameVelocity)/(Mathf.Pow(c, 2))));
     }
 
     //what I think the new frames time will be based on how far away and the rockets proper time
