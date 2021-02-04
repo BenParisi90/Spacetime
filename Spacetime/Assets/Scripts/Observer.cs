@@ -25,7 +25,7 @@ public class Observer : MonoBehaviour
         velocityText.text = "V=" + velocity.ToString(Controller.ROUNDING_RULE);
     }
 
-    public void SetObservedTime(float newObservedTime)
+    public void SetTime(float newObservedTime)
     {
         observedTime = newObservedTime;
         timeText.text = "T=" + observedTime.ToString(Controller.ROUNDING_RULE);   
@@ -43,7 +43,7 @@ public class Observer : MonoBehaviour
     {
         sr = transform.GetChild(0).GetComponent<SpriteRenderer>();
         SetVelocity(velocity);
-        SetObservedTime(observedTime);
+        SetTime(observedTime);
         SetPosition(transform.position.x);
         startVelocity = velocity;
         startObservedTime = observedTime;
@@ -53,7 +53,7 @@ public class Observer : MonoBehaviour
     public void Reset()
     {
         SetVelocity(startVelocity);
-        SetObservedTime(startObservedTime);
+        SetTime(startObservedTime);
         SetPosition(startPosition);
     }
 

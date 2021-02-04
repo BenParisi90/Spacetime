@@ -37,7 +37,7 @@ public class Controller : MonoBehaviour
             float newPosition = observer.transform.position.x + (observer.velocity * Time.deltaTime);
             observer.SetPosition(newPosition);
 
-            observer.SetObservedTime(observer.observedTime + (Time.deltaTime / LorentzFactor(observer.velocity)));
+            observer.SetTime(observer.observedTime + (Time.deltaTime / LorentzFactor(observer.velocity)));
             //observer.SetObservedTime(LorentzTransformTime(observer.velocity, GetPosition(me, observer), properTime));
         }
     }
@@ -129,7 +129,7 @@ public class Controller : MonoBehaviour
         for(i = 0; i < observers.Count; i ++)
         {
             UnityEngine.Debug.Log("Set time " + observers[i].name + ": " + (newTimes[i] - timeOffset));
-            observers[i].SetObservedTime(newTimes[i] - timeOffset);
+            observers[i].SetTime(newTimes[i] - timeOffset);
             UnityEngine.Debug.Log("Set " + observers[i].name + " position relative to " + newFrame.name + ": " + (newPositions[i] - newFramePosition));
             SetPosition(newFrame, observers[i], (newPositions[i] - newFramePosition));
             UnityEngine.Debug.Log("Set velocity " + observers[i].name + ": " + newVelocities[i]);
